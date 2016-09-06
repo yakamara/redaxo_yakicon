@@ -1,0 +1,7 @@
+package: yakicon
+version: '1.0.0'
+author: 'Thomas Blum'
+supportpage: www.redaxo.org
+
+requires:
+    redaxo: '>=5.1.0'
