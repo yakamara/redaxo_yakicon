@@ -1,8 +1,8 @@
 <?php
 
 if (rex::isBackend()) {
-    rex_view::addCssFile($this->getAssetsUrl('fonts/icomoon/styles.css'));
-    rex_view::addJsFile($this->getAssetsUrl('iconsets/iconset-icomoon.js'));
+    // rex_view::addCssFile($this->getAssetsUrl('fonts/icomoon/styles.css'));
+    // rex_view::addJsFile($this->getAssetsUrl('iconsets/iconset-icomoon.js'));
 
     rex_view::addCssFile($this->getAssetsUrl('fonts/font-awesome-4.6.3/css/font-awesome.min.css'));
     rex_view::addJsFile($this->getAssetsUrl('iconsets/iconset-font-awesome-4.6.3.js'));
