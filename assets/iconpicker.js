@@ -47,15 +47,17 @@
 
     IconpickerAddon.initMainContent = function(content) {
         IconpickerAddon.initContent(content);
-    }
+    };
 
     $(document).on('rex:ready', function(event, container) {
         IconpickerAddon.init();
     });
 
-    mblock_module.registerCallback('reindex_end', function() {
-        IconpickerAddon.initMblock($('.mblock_wrapper'));
-    });
+    if (typeof mblock_module !== 'undefined') {
+        mblock_module.registerCallback('reindex_end', function() {
+            IconpickerAddon.initMblock($('.mblock_wrapper'));
+        });
+    }
 
 }(jQuery));
 
