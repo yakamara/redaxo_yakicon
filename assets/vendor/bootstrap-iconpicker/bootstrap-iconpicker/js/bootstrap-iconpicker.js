@@ -1,31 +1,32 @@
 /*!========================================================================
- * Bootstrap: bootstrap-iconpicker.js v1.7.0 by @recktoner
- * https://victor-valencia.github.com/bootstrap-iconpicker
- * ========================================================================
- * Copyright 2013-2015 Victor Valencia Rico.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ======================================================================== */
+* File: bootstrap-iconpicker.js v1.10.0 by @victor-valencia
+* https://victor-valencia.github.com/bootstrap-iconpicker
+* ========================================================================
+* Copyright 2013-2018 Victor Valencia Rico.
+* Licensed under MIT license.
+* https://github.com/victor-valencia/bootstrap-iconpicker/blob/master/LICENSE
+* ========================================================================
+*/
 
 ;(function($){ "use strict";
 
     // ICONPICKER PUBLIC CLASS DEFINITION
     // ==============================
     var Iconpicker = function (element, options) {
+
+      if (typeof $.fn.popover === 'undefined' || typeof $.fn.popover.Constructor.VERSION === 'undefined') {
+        throw new TypeError('Bootstrap iconpicker require Bootstrap popover');
+      }
+
       this.$element = $(element);
       this.options  = $.extend({}, Iconpicker.DEFAULTS, this.$element.data());
       this.options  = $.extend({}, this.options, options);
+
     };
+
+    // ICONPICKER VERSION
+    // ==============================
+    Iconpicker.VERSION = '1.10.0';
 
     // ICONPICKER ICONSET_EMPTY
     // ==============================
@@ -40,9 +41,11 @@
     Iconpicker.ICONSET = {
         _custom: null,
         elusiveicon: $.iconset_elusiveicon || Iconpicker.ICONSET_EMPTY,
-        fontawesome: $.iconset_fontawesome || Iconpicker.ICONSET_EMPTY,
-        ionicon: $.iconset_ionicon || Iconpicker.ICONSET_EMPTY,
+        flagicon: $.iconset_flagicon || Iconpicker.ICONSET_EMPTY,
+        fontawesome4: $.iconset_fontawesome_4 || Iconpicker.ICONSET_EMPTY,
+        fontawesome5: $.iconset_fontawesome_5 || Iconpicker.ICONSET_EMPTY,
         glyphicon: $.iconset_glyphicon || Iconpicker.ICONSET_EMPTY,
+        ionicon: $.iconset_ionicon || Iconpicker.ICONSET_EMPTY,
         mapicon: $.iconset_mapicon || Iconpicker.ICONSET_EMPTY,
         materialdesign: $.iconset_materialdesign || Iconpicker.ICONSET_EMPTY,
         octicon: $.iconset_octicon || Iconpicker.ICONSET_EMPTY,
@@ -55,11 +58,12 @@
     Iconpicker.DEFAULTS = {
         align: 'center',
         arrowClass: 'btn-primary',
-        arrowNextIconClass: 'glyphicon glyphicon-arrow-right',
-        arrowPrevIconClass: 'glyphicon glyphicon-arrow-left',
+        arrowNextIconClass: 'fas fa-arrow-right',
+        arrowPrevIconClass: 'fas fa-arrow-left',
         cols: 4,
         icon: '',
-        iconset: 'glyphicon',
+        iconset: 'fontawesome5',
+        iconsetVersion: 'lastest',
         header: true,
         labelHeader: '{0} / {1}',
         footer: true,
@@ -69,7 +73,7 @@
         search: true,
         searchText: 'Search icon',
         selectedClass: 'btn-warning',
-        unselectedClass: 'btn-default'
+        unselectedClass: 'btn-secondary'
     };
 
     // ICONPICKER PRIVATE METHODS
@@ -79,17 +83,19 @@
         var el = this;
         op.table.find('.btn-previous, .btn-next').off('click').on('click', function(e) {
             e.preventDefault();
-            var inc = parseInt($(this).val(), 10);
-            el.changeList(op.page + inc);
+            if(!$(this).hasClass('disabled')){
+                var inc = parseInt($(this).val(), 10);
+                el.changeList(op.page + inc);
+            }
         });
         op.table.find('.btn-icon').off('click').on('click', function(e) {
             e.preventDefault();
             el.select($(this).val());
             if(op.inline === false){
-                el.$element.popover('destroy');
+                el.$element.popover(($.fn.bsVersion() === '3.x') ? 'destroy' : 'dispose');
             }
             else{
-                op.table.find('i.' + $(this).val()).parent().addClass(op.selectedClass);
+                op.table.find("i[class$='" + $(this).val() + "']").parent().addClass(op.selectedClass);
             }
         });
         op.table.find('.search-control').off('keyup').on('keyup', function() {
@@ -108,13 +114,24 @@
     Iconpicker.prototype.filterIcons = function () {
         var op = this.options;
         var search = op.table.find('.search-control').val();
+        var icons = [];
+        if(op.iconsetVersion != 'lastest' && typeof Iconpicker.ICONSET[op.iconset].allVersions != 'undefined'){
+            $.each(Iconpicker.ICONSET[op.iconset].allVersions, function(i, v){
+                if(op.iconsetVersion == v.version){
+                    icons = v.icons;
+                }
+            });
+        }
+        else
+            icons = Iconpicker.ICONSET[op.iconset].icons;
+
         if (search === "") {
-            op.icons = Iconpicker.ICONSET[op.iconset].icons;
+            op.icons = icons;
         }
         else {
             var result = [];
-            $.each(Iconpicker.ICONSET[op.iconset].icons, function(i, v) {
-               if (v.indexOf(search) > -1) {
+            $.each(icons, function(i, v) {
+               if (v.toLowerCase().indexOf(search) > -1) {
                    result.push(v);
                }
             });
@@ -151,6 +168,7 @@
             }
             else {
                 el.trigger({ type: "change", icon: icon });
+                el.find('input').val(icon);
             }
             op.table.find('button.' + op.selectedClass).removeClass(op.selectedClass);
         }
@@ -165,7 +183,9 @@
             this.changeList(page);
         }
         if(icon === ''){
-            op.table.find('i.' + op.iconClassFix).parent().addClass(op.selectedClass);
+            //if(op.iconClassFix !== '')
+                op.table.find('i.' + op.iconClassFix).parent().addClass(op.selectedClass);
+            //else
         }
         else{
             op.table.find('i.' + icon).parent().addClass(op.selectedClass);
@@ -253,7 +273,7 @@
         op.table.find('.page-count').html(op.labelHeader.replace('{0}', (total_pages === 0 ) ? 0 : page).replace('{1}', total_pages));
         var offset = (page - 1) * this.totalIconsPerPage();
         var total = page * this.totalIconsPerPage();
-        op.table.find('.icons-count').html(op.labelFooter.replace('{0}', offset + 1).replace('{1}', (total < total_icons) ? total: total_icons).replace('{2}', total_icons));
+        op.table.find('.icons-count').html(op.labelFooter.replace('{0}', total_icons ? offset + 1 : 0).replace('{1}', (total < total_icons) ? total: total_icons).replace('{2}', total_icons));
         this.updateArrows(page);
     };
 
@@ -301,7 +321,7 @@
         var search = [
             '<tr>',
             '   <td colspan="' + op.cols + '">',
-            '       <input type="text" class="form-control search-control" style="width: ' + op.cols * 39 + 'px;" placeholder="' + op.searchText + '">',
+            '       <input type="text" class="form-control search-control" style="width: ' + op.cols * (($.fn.bsVersion() === '3.x') ? 39 : 41) + 'px;" placeholder="' + op.searchText + '">',
             '   </td>',
             '</tr>'
         ];
@@ -461,7 +481,7 @@
                         .append('<i></i>')
                         .append('<input type="hidden" ' + name + '></input>')
                         .append('<span class="caret"></span>')
-                        .addClass('iconpicker');
+                        .addClass('iconpicker ' + (($.fn.bsVersion() === '3.x') ? '' : 'dropdown-toggle'));
                     data.setIconset(op.iconset);
                     $this.on('click', function(e) {
                         e.preventDefault();
@@ -472,11 +492,15 @@
                             content: op.table,
                             container: 'body',
                             placement: op.placement
+                        }).on('inserted.bs.popover', function() {
+                            var el = $this.data('bs.popover');
+                            var tip = ($.fn.bsVersion() === '3.x') ? el.tip() : $(el.getTipElement())
+                            tip.addClass('iconpicker-popover');
                         }).on('shown.bs.popover', function () {
                             data.switchPage(op.icon);
                             data.bindEvents();
                         });
-                        $this.data('bs.popover').tip().addClass('iconpicker-popover');
+                        //console.log($.fn.bsVersion());
                         $this.popover('show');
                     });
                 }
@@ -505,6 +529,10 @@
         return this;
     };
 
+    $.fn.bsVersion = function() {
+        return $.fn.popover.Constructor.VERSION.substr(0,2) + 'x';
+    };
+
     // ICONPICKER DATA-API
     // ===============
     $(document).on('click', 'body', function (e) {
@@ -512,7 +540,7 @@
             //the 'is' for buttons that trigger popups
             //the 'has' for icons within a button that triggers a popup
             if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-                $(this).popover('destroy');
+                $(this).popover(($.fn.bsVersion() === '3.x') ? 'destroy' : 'dispose');
             }
         });
     });

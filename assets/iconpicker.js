@@ -10,12 +10,15 @@
     IconpickerAddon.initContent = function(content) {
         content.find('[data-iconpicker]').each(function () {
             var input = $(this);
-            var iconpickerset = input.attr('data-iconpicker') || 'fontawesome';
+            var iconpickerset = input.attr('data-iconpicker') || 'fontawesome5';
             var button = $('<button type="button" class="btn btn-default" name="' + input.attr('name') + '" data-iconpickerset="' + iconpickerset + '">Iconpicker</button>');
 
             button.iconpicker({
                 arrowPrevIconClass: "rex-icon rex-icon-previous",
                 arrowNextIconClass: "rex-icon rex-icon-next",
+				unselectedClass: "btn-default",
+				selectedClass: "btn-save",
+				search: true,
                 iconset: $['iconset_' + iconpickerset],
                 icon: input.val(),
                 placement: 'right',
@@ -36,6 +39,9 @@
             button.iconpicker({
                 arrowPrevIconClass: "rex-icon rex-icon-previous",
                 arrowNextIconClass: "rex-icon rex-icon-next",
+				unselectedClass: "btn-default",
+				selectedClass: "btn-save",
+				search: true,
                 iconset: $['iconset_' + iconpickerset],
                 icon: '',
                 placement: 'right',
